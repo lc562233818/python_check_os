@@ -1,0 +1,17 @@
+- hosts: test
+  remote_user: root
+  gather_facts: F
+  become: yes
+  become_method: sudo
+  become_user: root
+  tasks:
+    - shell: |
+        ip=`ip a  | grep inet | awk '{if(NR==3) print $0}' | sed -e 's/\/.*//g' | awk '{print $2}'`;df -h | grep -v Filesystem | sed -e 's/%//g' | awk -v ip=$ip '{if($5>=80) print ip,$5,$6}'
+        echo
+        ip=`ip a  | grep inet | awk '{if(NR==3) print $0}' | sed -e 's/\/.*//g' | awk '{print $2}'`;free -m |awk '{if(NR==2) print $0}'|awk -v ip=$ip '{printf "%s,%.2f",ip,100-$7/$2*100}'
+        echo
+        echo
+        ip=`ip a  | grep inet | awk '{if(NR==3) print $0}' | sed -e 's/\/.*//g' | awk '{print $2}'`;top -bn1 | grep "%Cpu(s)" |awk -v ip=$ip '{print ip,100-$8}'
+        echo
+      register: out
+    - debug: var=out.stdout_lines
